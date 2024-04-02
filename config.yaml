@@ -17,3 +17,5 @@ model_config:
   'context_length': 2048
   'gpu_layers' : 0 # 32 to put all mistral layers on GPU, might differ for other models
   'threads' : -1
+
+chat_history_path : "./chat_sessions"
