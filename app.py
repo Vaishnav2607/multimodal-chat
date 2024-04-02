@@ -28,6 +28,7 @@ def main():
 
     chat_history = StreamlitChatMessageHistory(key="history")
     llm_chain = load_chain(chat_history = chat_history)  # Pass chat_history to load_chain
+    llm_chain = load_chain(chat_history)  # Pass chat_history to load_chain
 
     user_input = st.text_input("Type your message here", key="user_input", on_change=set_send_input)
     send_button = st.button("Send", key="send_button")
@@ -47,5 +48,6 @@ def main():
                 st.chat_message(message.type).write(message.content)
         
  
+
 if __name__ == "__main__":
     main()
