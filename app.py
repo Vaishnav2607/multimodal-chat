@@ -46,8 +46,10 @@ def main():
             st.write("Chat History: ")
             for message in chat_history.messages:
                 st.chat_message(message.type).write(message.content)
-        
+print("test")
  
 
 if __name__ == "__main__":
     main()
+
+
