@@ -18,4 +18,4 @@ model_config:
   'gpu_layers' : 0 # 32 to put all mistral layers on GPU, might differ for other models
   'threads' : -1
 
-chat_history_path : "./chat_sessions"
+chat_history_path : "./chat_sessions/"

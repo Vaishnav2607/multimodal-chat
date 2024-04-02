@@ -5,15 +5,14 @@ from langchain_community.chat_message_histories import (
     StreamlitChatMessageHistory,
 )
 import yaml
-# from utils import save_chat_history_json
+import json
+from langchain.schema.messages import HumanMessage, AIMessage
+from utils import save_chat_history_json
 # from langchain.memory import StreamlitChatMessagesHistory
 with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
-def save_chat_history_json(chat_history, file_path):
-    with open(file_path, "w") as f:
-        json_data = [message.dict() for message in chat_history]
-        json.dump(json_data, f)
+
 
 def load_chain(chat_history):
     return load_normal_chain(chat_history)
@@ -26,9 +25,15 @@ def set_send_input():
     st.session_state.send_input = True
     clear_input_field()
 
+# def save_chat_history_json(chat_history, file_path):
+#     with open(file_path, "w") as f:
+#         json_data = [message.dict() for message in chat_history]
+#         json.dump(json_data, f)
+
 def save_chat_history():
-    if(st.session.state.history!=[]):
-        save_chat_history_json(st.session_state.history, config["chat_history_path"] + "random" + ".json")
+    if(st.session_state.history!=[]):
+        save_chat_history_json(st.session_state.history, config["chat_history_path"] + st.session_state.session_key + ".json")
+        print("Saved and Done")
 def main():
     st.title("Multimodal chat app")
     chat_container = st.container()
@@ -61,8 +66,9 @@ def main():
             st.write("Chat History: ")
             for message in chat_history.messages:
                 st.chat_message(message.type).write(message.content)
-    print(chat_history.messages[0].dict())
+    # print(chat_history.messages[0].dict())
     save_chat_history()
+    print(chat_sessions)
 print("test")
  
 
