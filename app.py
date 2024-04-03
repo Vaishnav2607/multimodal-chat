@@ -7,7 +7,7 @@ from langchain_community.chat_message_histories import (
 import yaml
 import json
 from langchain.schema.messages import HumanMessage, AIMessage
-from utils import save_chat_history_json
+from utils import save_chat_history_json, get_timestamp, load_chat_history_json
 # from langchain.memory import StreamlitChatMessagesHistory
 with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
@@ -30,21 +30,53 @@ def set_send_input():
 #         json_data = [message.dict() for message in chat_history]
 #         json.dump(json_data, f)
 
+# def save_chat_history():
+#     if(st.session_state.history!=[]):
+#         if st.session_state.session_key == "new_session":
+#             st.session_state.new_session_key = get_timestamp()+".json"
+#             save_chat_history_json(st.session_state.history, config["chat_history_path"] + st.session_state.new_session_key)
+#         else:
+#             save_chat_history_json(st.session_state.history, config["chat_history_path"] + st.session_state.session_key + ".json")
+#         # print("Saved and Done")
+
 def save_chat_history():
-    if(st.session_state.history!=[]):
-        save_chat_history_json(st.session_state.history, config["chat_history_path"] + st.session_state.session_key + ".json")
-        print("Saved and Done")
+    if st.session_state.history != []:
+        if st.session_state.session_key == "new_session":
+            timestamp = get_timestamp()
+            st.session_state.session_index_tracker = timestamp
+            filename = f"{timestamp}.json"
+            save_chat_history_json(st.session_state.history, os.path.join(config["chat_history_path"], filename))
+        else:
+            save_chat_history_json(st.session_state.history, os.path.join(config["chat_history_path"], st.session_state.session_key + ".json"))
+
+
 def main():
     st.title("Multimodal chat app")
     chat_container = st.container()
     st.sidebar.title("Chat Sessions")
     chat_sessions = ["new_session"] + os.listdir(config["chat_history_path"])
 
+    # if "session_key" not in st.session_state:
+    #     st.session_state.session_key = "new_session"
+
     if "send_input" not in st.session_state:
+        st.session_state.session_key = "new_session"
         st.session_state.send_input = False
         st.session_state.user_question = ""
+        st.session_state.new_session_key=None
+        st.session_state.session_index_tracker = "new_session"
+    if st.session_state.session_key == "new_session" and st.session_state.new_session_key !=None:
+        st.session_state.session_index_tracker = st.session_state.new_session_key
+        st.session_state.new_session_key = None
+
+    index = chat_sessions.index(st.session_state.session_index_tracker)
     
-    st.sidebar.selectbox("Select a chat Session", chat_sessions, key="session_key")
+    st.sidebar.selectbox("Select a chat Session", chat_sessions, key="session_key", index=index)
+
+    if st.session_state.session_key != "new_session":
+        st.session_state.history = load_chat_history_json(config["chat_history_path"] + st.session_state.session_key)
+    else:
+        st.session_state.history=[]
 
     chat_history = StreamlitChatMessageHistory(key="history")
     llm_chain = load_chain(chat_history = chat_history)  # Pass chat_history to load_chain
@@ -69,7 +101,7 @@ def main():
     # print(chat_history.messages[0].dict())
     save_chat_history()
     print(chat_sessions)
-print("test")
+# print("test")
  
 
 if __name__ == "__main__":
