@@ -25,6 +25,8 @@ def set_send_input():
     st.session_state.send_input = True
     clear_input_field()
 
+def track_index():
+    st.session_state.session_index_tracker = st.session_state.session_key
 # def save_chat_history_json(chat_history, file_path):
 #     with open(file_path, "w") as f:
 #         json_data = [message.dict() for message in chat_history]
@@ -71,7 +73,7 @@ def main():
 
     index = chat_sessions.index(st.session_state.session_index_tracker)
     
-    st.sidebar.selectbox("Select a chat Session", chat_sessions, key="session_key", index=index)
+    st.sidebar.selectbox("Select a chat Session", chat_sessions, key="session_key", index=index, on_change=track_index)
 
     if st.session_state.session_key != "new_session":
         st.session_state.history = load_chat_history_json(config["chat_history_path"] + st.session_state.session_key)
