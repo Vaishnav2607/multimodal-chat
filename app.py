@@ -6,9 +6,18 @@ from langchain_community.chat_message_histories import (
 )
 import yaml
 import json
+from streamlit_mic_recorder import mic_recorder
 from langchain.schema.messages import HumanMessage, AIMessage
 from utils import save_chat_history_json, get_timestamp, load_chat_history_json
 # from langchain.memory import StreamlitChatMessagesHistory
+from audio_handler import transcribe_audio
+
+
+
+
+
+
+
 with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
@@ -85,16 +94,31 @@ def main():
     llm_chain = load_chain(chat_history)  # Pass chat_history to load_chain
 
     user_input = st.text_input("Type your message here", key="user_input", on_change=set_send_input)
-    send_button = st.button("Send", key="send_button")
+    voice_recording_column, send_button_column = st.columns(2)
+    with voice_recording_column:
+        voice_recording = mic_recorder(start_prompt="Start recording",stop_prompt="Stop recording", just_once=True) 
+    with send_button_column:
+        send_button = st.button("Send", key="send_button", on_click=clear_input_field)
+
+    uploaded_audio = st.sidebar.file_uploader("Upload an audio file", type=["wav", "mp3", "ogg"])
+
+    print(voice_recording)
+    if uploaded_audio :
+        transcribed_audio = transcribe_audio(uploaded_audio.getvalue())
+        llm_chain.run("Summarize this text: "+transcribed_audio, chat_history)
+
+    if(voice_recording):
+        transcribed_audio = transcribe_audio(voice_recording["bytes"])
+        llm_chain.run(transcribed_audio, chat_history)
+        print(transcribed_audio)
 
     if send_button or st.session_state.send_input:
         if st.session_state.user_question != "":
-            with chat_container:
-                st.chat_message("user").write(st.session_state.user_question)
-                llm_response = llm_chain.run(st.session_state.user_question, chat_history)  # Pass chat_history here
-                print(llm_response)
-                st.chat_message("ai").write(llm_response)
-                st.session_state.user_question = ""
+            # st.chat_message("user").write(st.session_state.user_question)
+            llm_response = llm_chain.run(st.session_state.user_question, chat_history)  # Pass chat_history here
+            print(llm_response)
+            # st.chat_message("ai").write(llm_response)
+            st.session_state.user_question = ""
     if chat_history.messages !=[]:
         with chat_container:
             st.write("Chat History: ")
