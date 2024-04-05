@@ -11,6 +11,7 @@ from langchain.schema.messages import HumanMessage, AIMessage
 from utils import save_chat_history_json, get_timestamp, load_chat_history_json
 # from langchain.memory import StreamlitChatMessagesHistory
 from audio_handler import transcribe_audio
+from image_handler import handle_image
 
 
 
@@ -101,6 +102,7 @@ def main():
         send_button = st.button("Send", key="send_button", on_click=clear_input_field)
 
     uploaded_audio = st.sidebar.file_uploader("Upload an audio file", type=["wav", "mp3", "ogg"])
+    uploaded_image = st.sidebar.file_uploader("Upload an image file", type=["png", "jpeg", "jpg"])
 
     print(voice_recording)
     if uploaded_audio :
@@ -113,6 +115,16 @@ def main():
         print(transcribed_audio)
 
     if send_button or st.session_state.send_input:
+        if uploaded_image:
+            with st.spinner("Processing Image....."):
+                user_message = "Describe this image in detail please."
+                if st.session_state.user_question !=[]:
+                    user_message = st.session_state.user_question
+                    st.session_state.user_question = ""
+                llm_answer = handle_image(uploaded_image.getvalue(), st.session_state.user_question)
+                chat_history.add_user_message(user_message)
+                chat_history.add_ai_message(llm_answer)
+
         if st.session_state.user_question != "":
             # st.chat_message("user").write(st.session_state.user_question)
             llm_response = llm_chain.run(st.session_state.user_question, chat_history)  # Pass chat_history here
