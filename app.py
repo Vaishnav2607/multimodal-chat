@@ -12,7 +12,7 @@ from utils import save_chat_history_json, get_timestamp, load_chat_history_json
 # from langchain.memory import StreamlitChatMessagesHistory
 from audio_handler import transcribe_audio
 from image_handler import handle_image
-
+from pdf_handler import add_documents_to_db
 
 
 
@@ -103,8 +103,16 @@ def main():
 
     uploaded_audio = st.sidebar.file_uploader("Upload an audio file", type=["wav", "mp3", "ogg"])
     uploaded_image = st.sidebar.file_uploader("Upload an image file", type=["png", "jpeg", "jpg"])
+    uploaded_pdf = st.sidebar.file_uploader("Upload an pdf file", accept_multiple_files=True,key="pdf_upload" ,type=["pdf"])
+
+
 
     print(voice_recording)
+
+    if uploaded_pdf:
+        with st.spinner("Processing pdfs....."):
+            add_documents_to_db(uploaded_pdf)
+
     if uploaded_audio :
         transcribed_audio = transcribe_audio(uploaded_audio.getvalue())
         llm_chain.run("Summarize this text: "+transcribed_audio, chat_history)

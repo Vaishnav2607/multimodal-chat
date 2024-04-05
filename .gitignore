@@ -1,3 +1,4 @@
 models/
-__pycache__/
 chat_sessions/
+chroma_db/
+__pycache__/
