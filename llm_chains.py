@@ -35,6 +35,9 @@ def create_llm_chain(llm, chat_prompt, memory):
 def load_normal_chain(chat_history):
     return chatChain(chat_history)
 
+def load_pdf_chat_chain(chat_history):
+    return pdfChatChain(chat_history)
+
 def load_vectordb(embeddings):
     # persistant_client = chromadb.PersistantClient("chroma_db")
     persistant_client = chromadb.PersistentClient(path="chroma_db")
@@ -45,6 +48,23 @@ def load_vectordb(embeddings):
     )
     # print("There are ", langchain_chroma.collection_count(), "in the collection")
     return langchain_chroma
+
+def load_retrieval_chain(llm, memory, vector_db):
+    return RetrievalQA.from_llm(llm=llm, memory=memory, retriever=vector_db.as_retriever())
+
+
+
+class pdfChatChain:
+    def __init__(self, chat_history):
+        self.memory = create_chat_memory(chat_history)
+        self.vector_db = load_vectordb(create_embeddings())
+        llm = create_llm()
+        # chat_prompt = create_prompt_from_template(pdf_chat_prompt)
+        self.llm_chain = load_retrieval_chain(llm, self.memory, self.vector_db)
+
+    def run(self, user_input, chat_history):
+        print("Pdf chat chain is running...")
+        return self.llm_chain.invoke(input={"query" : user_input, "history" : chat_history})
 
 
 class chatChain:
