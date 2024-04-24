@@ -15,13 +15,8 @@ from image_handler import handle_image
 from pdf_handler import add_documents_to_db
 
 
-
-
-
-
 with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
-
 
 
 def load_chain(chat_history):
@@ -60,21 +55,21 @@ def save_chat_history():
     if st.session_state.history != []:
         if st.session_state.session_key == "new_session":
             timestamp = get_timestamp()
-            st.session_state.session_index_tracker = timestamp
+            st.session_state.new_session_key = timestamp
             filename = f"{timestamp}.json"
             save_chat_history_json(st.session_state.history, os.path.join(config["chat_history_path"], filename))
         else:
-            save_chat_history_json(st.session_state.history, os.path.join(config["chat_history_path"], st.session_state.session_key + ".json"))
+            save_chat_history_json(st.session_state.history, os.path.join(config["chat_history_path"], st.session_state.session_key))
 
 
 def main():
-    st.title("Multimodal chat app")
+    st.title("Multimodal Chat App")
     chat_container = st.container()
     st.sidebar.title("Chat Sessions")
     chat_sessions = ["new_session"] + os.listdir(config["chat_history_path"])
 
-    # if "session_key" not in st.session_state:
-    #     st.session_state.session_key = "new_session"
+    if "session_key" not in st.session_state:
+        st.session_state.session_key = "new_session"
 
     if "send_input" not in st.session_state:
         st.session_state.session_key = "new_session"
